@@ -185,7 +185,7 @@ export default class AppComponent extends Component {
                 )
             }else{
                let component = React.createElement(this.props.overrideComponent,{
-                   appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, ...this.props
+                   appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
                })
                 return component;
             }
