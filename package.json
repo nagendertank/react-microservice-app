@@ -4,7 +4,7 @@
   "description": "A base app to load all the react microservices",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "babel --optional runtime src --out-dir lib",
+    "prepublish": "babel --optional runtime src --out-dir lib --copy-files",
     "postpublish": "rm -rf lib",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
