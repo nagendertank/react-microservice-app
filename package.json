@@ -1,7 +1,7 @@
 {
-  "name": "react-classname-prefix-loader-with-lookup",
-  "version": "1.0.2",
-  "description": "A Webpack loader that prefixes classes with custom prefix in React components",
+  "name": "react-microservice-app",
+  "version": "1.0.0",
+  "description": "A base app to load all the react microservices",
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "babel --optional runtime src --out-dir lib",
@@ -33,6 +33,6 @@
     "babel-runtime": "^6.18.0"
   },
   "dependencies": {
-    "loader-utils": "^1.1.0"
+   
   }
 }
