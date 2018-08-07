@@ -20,6 +20,7 @@ export default class AppComponent extends Component {
         this.getComponent = this.getComponent.bind(this);
         this.loadMenu = this.loadMenu.bind(this);
         this.getSpecs = this.getSpecs.bind(this);
+        this.loadRoute = this.loadRoute.bind(this);
         this.currentBundle = 0;
     }
 
@@ -60,13 +61,13 @@ export default class AppComponent extends Component {
                             let path = window.location.pathname.replace(self.props.routeUrl, '')
                             routeData.some((route) => {
                                 if (path === '' || path==='/'){
-                                    component = React.createElement(route.component, self.dataProps);
+                                    component = React.createElement(route.component, self.props);
                                     return;
                                 }else{
                                     if (self.props.match.params){
                                         let re = pathToRegexp(route.path);
                                         let params = re.exec(self.props.match.params[0])
-                                        let props = Object.assign({}, self.props,self.dataProps);
+                                        let props = Object.assign({}, self.props,self.props);
                                         props.match.params = params;
                                         component = React.createElement(route.component, props);
                                         return;
@@ -87,13 +88,13 @@ export default class AppComponent extends Component {
                                 let component = null;
                                 routeData.some((route) => {
                                     if (self.props.match.url && self.props.match.url === self.props.routeUrl) {
-                                        component = React.createElement(route.component, self.dataProps);
+                                        component = React.createElement(route.component, self.props);
                                         return;
                                     }else{
                                         if (self.props.match.params) {
                                             let re = pathToRegexp(route.path);
                                             let params = re.exec(self.props.match.params[0])
-                                            let props = Object.assign({}, self.props, self.dataProps);
+                                            let props = Object.assign({}, self.props);
                                             props.match.params = params;
                                             component = React.createElement(route.component, props);
                                             return;
@@ -116,7 +117,7 @@ export default class AppComponent extends Component {
             });
     }
 
-    loadMenu(menuName,specsData){
+    loadMenu(menuName, specsData, dataProps){
         let self = this;
             let menuData = [];
         specsData.forEach((service)=>{
@@ -134,7 +135,7 @@ export default class AppComponent extends Component {
 
             if(menuData.length>0){
                 menuData.forEach((data) => {
-                    self.getComponent(data.microService, self.props, menuData, true, specsData);
+                    self.getComponent(data.microService, dataProps, menuData, true, specsData);
                 })
             }else{
                 this.setState({
@@ -143,15 +144,70 @@ export default class AppComponent extends Component {
             }
     }
 
+    loadRoute(specsData,dataProps){
+        this.setState({ loading: true });
+        let self = this;
+        specsData.forEach((service)=>{
+            let routes = service.spec.sharedRoutes;
+            routes.some((route) => {
+                if (dataProps.match.params) {
+                    let re = pathToRegexp(route);
+                    let params = null;
+                  if (dataProps.match.params[0].startsWith('/')){
+                      params = re.exec(dataProps.match.params[0])
+                    }else{
+                      params = re.exec('/' + dataProps.match.params[0])
+                    }
+                    if(params){
+                        LoadBundle(service.spec.name, specsData, dataProps.apiGwUrl, function (result, appDetail) {
+                            if(result){
+                                let routeData = eval(appDetail.library).Routes;
+                                let component = null;
+                                let isRouteFound = false;
+                                routeData.some((appRoute) => {
+                                    if (appRoute.path === route) {
+                                        let props = Object.assign({}, dataProps);
+                                        props.match.params = params;
+                                        component = React.createElement(appRoute.component, props);
+                                        isRouteFound = true;
+                                        self.setState({
+                                            loading: false,
+                                            component,
+                                            appDetail: appDetail,
+                                            error: false
+                                        });
+                                        return;
+                                    }
+                                });
+
+                                if (!isRouteFound){
+                                    self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+                                }
+                            }else{
+                                self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+                            }
+                        }); 
+                        return;
+                    }else{
+                        self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+                    }
+               }
+            });
+        });
+    }
+
     componentDidMount(){
         let appName = this.props.appName;
         let menuName = this.props.menuName;
+        let loadInternalRoute = this.props.loadInternalRoute;
         let self = this;
         this.getSpecs(function(specsData){
             if (appName) {
                 self.getComponent(appName, self.props, null, false, specsData);
             } else if (menuName) {
-                self.loadMenu(menuName, specsData);
+                self.loadMenu(menuName, specsData,self.props);
+            } else if (loadInternalRoute){
+                self.loadRoute(specsData,self.props);
             } 
         });
     }
@@ -159,13 +215,16 @@ export default class AppComponent extends Component {
     componentWillReceiveProps(nextProps){
         let appName = nextProps.appName;
         let menuName = nextProps.menuName;
+        let loadInternalRoute = nextProps.loadInternalRoute;
         let self = this;
         this.currentBundle = 0;
         this.getSpecs(function (specsData) {
             if (appName) {
                 self.getComponent(appName, nextProps, null, false, specsData);
             } else if (menuName) {
-                self.loadMenu(menuName, specsData);
+                self.loadMenu(menuName, specsData, nextProps);
+            } else if (loadInternalRoute){
+                self.loadRoute(specsData, nextProps);
             }
         });
     }
@@ -196,8 +255,9 @@ export default class AppComponent extends Component {
             return component;
         }else{
             return (
+                this.props.notFound ? this.props.notFound():
                 <div>
-                    Unable to load component
+                    {this.state.component || 'Unable to load component'}
                 </div>
             )
         }
