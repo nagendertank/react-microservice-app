@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nagendertank/react-classname-prefix-with-lookup.git"
+    "url": "git+https://github.com/nagendertank/react-microservice-app.git"
   },
   "keywords": [
     "react",
@@ -19,9 +19,9 @@
   "author": "Nagendra Tank",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nagendertank/react-classname-prefix-with-lookup.git/issues"
+    "url": "https://github.com/nagendertank/react-microservice-app.git/issues"
   },
-  "homepage": "https://github.com/nagendertank/react-classname-prefix-with-lookup.git#readme",
+  "homepage": "https://github.com/nagendertank/react-microservice-app.git#readme",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
