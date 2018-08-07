@@ -120,7 +120,7 @@ export default class AppComponent extends Component {
     loadMenu(menuName, specsData, dataProps){
         let self = this;
             let menuData = [];
-        specsData.forEach((service)=>{
+        Array.isArray(specsData) && specsData.forEach((service)=>{
                 service.spec.navigation.forEach((navigation)=>{
                     if (navigation.menuName === menuName){
                         let obj = Object.assign({},{
@@ -139,15 +139,16 @@ export default class AppComponent extends Component {
                 })
             }else{
                 this.setState({
-                    loading: false,
+                    loading: false
                 });
             }
     }
 
     loadRoute(specsData,dataProps){
-        this.setState({ loading: true });
-        let self = this;
-        specsData.forEach((service)=>{
+        if (Array.isArray(specsData)){
+            let self = this;
+            this.setState({ loading: true });
+            specsData.forEach((service)=>{
             let routes = service.spec.sharedRoutes;
             routes.some((route) => {
                 if (dataProps.match.params) {
@@ -191,9 +192,12 @@ export default class AppComponent extends Component {
                     }else{
                         self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
                     }
-               }
+                }    
+                });
             });
-        });
+        }else{
+            this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+        }
     }
 
     componentDidMount(){
