@@ -5,8 +5,5 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|less)$": "<rootDir>/tests/__mocks__/styleMock.js"
   },
-  "collectCoverageFrom": [
-    
-  ],
-  "testEnvironment": "node"
-};
+  snapshotSerializers: ["enzyme-to-json/serializer"],
+ };
