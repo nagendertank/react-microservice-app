@@ -1,4 +1,4 @@
-# react-microservice-app [![Build Status](https://travis-ci.org/nagendertank/react-microservice-app.svg?branch=master)
+# react-microservice-app ![Build Status](https://travis-ci.org/nagendertank/react-microservice-app.svg?branch=master)
 A utility component for react app to load microfrontends.
 
 ## Installation
