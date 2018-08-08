@@ -12,7 +12,7 @@ Load microservice via route
 import {AppComponent} from 'react-microservice-app'
 
 <Route exact path={"/abc/**"}
-                            component={(props) => <AppComponent menuName="abc" overrideComponent={LoadMenuTabs} routeUrl="/abc" apiGwUrl={'http://layout_server'} {...props}/>} />
+    component={(props) => <AppComponent menuName="abc" overrideComponent={LoadMenuTabs} routeUrl="/abc" apiGwUrl={'http://layout_server'} {...props}/>} />
 
 ```
 
