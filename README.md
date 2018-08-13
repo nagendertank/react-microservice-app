@@ -14,5 +14,6 @@ import {AppComponent} from 'react-microservice-app'
     component={(props) => <AppComponent menuName="abc" overrideComponent={LoadMenuTabs} routeUrl="/abc" apiGwUrl={'http://layout_server'} {...props}/>} />
 
 ```
-
+## Note
+This project is in progress and will share all the information once ready. More updates will be soon.
 
