@@ -139,7 +139,8 @@ export default class AppComponent extends Component {
                 })
             }else{
                 this.setState({
-                    loading: false
+                    loading: false,
+                    menuData:[]
                 });
             }
     }
