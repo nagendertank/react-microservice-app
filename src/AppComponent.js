@@ -38,7 +38,7 @@ export default class AppComponent extends Component {
         }
     }
 
-    getComponent(name, props, menuData, isMenu, specsData){
+    getComponent(name, props, menuData, isMenu, specsData,componentName){
         let self = this;
         this.setState({ loading:true});
         LoadBundle(name, specsData, this.props.apiGwUrl, function (result, appDetail) {
@@ -52,8 +52,21 @@ export default class AppComponent extends Component {
                                 error: false
                             });
                         }
+                    } else if (componentName){
+                        if (eval(appDetail.library)) {
+                            let component = React.createElement(eval(appDetail.library)[componentName], self.props);
+                            self.setState({
+                                loading: false,
+                                component,
+                                appDetail: appDetail,
+                                error: false
+                            });
+                            return;
+                        }else{
+                            self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                        }
                     } else {
-                        if (eval(appDetail.library) && eval(appDetail.library).App) {
+                        if (eval(appDetail.library)) {
                             //let component = React.createElement(eval(appDetail.library).App, self.dataProps);
 
                             let routeData = eval(appDetail.library).Routes;
@@ -135,7 +148,7 @@ export default class AppComponent extends Component {
 
             if(menuData.length>0){
                 menuData.forEach((data) => {
-                    self.getComponent(data.microService, dataProps, menuData, true, specsData);
+                    self.getComponent(data.microService, dataProps, menuData, true, specsData,null);
                 })
             }else{
                 this.setState({
@@ -205,11 +218,14 @@ export default class AppComponent extends Component {
         let appName = this.props.appName;
         let menuName = this.props.menuName;
         let loadInternalRoute = this.props.loadInternalRoute;
+        let componentName = this.props.componentName;
         let self = this;
         this.getSpecs(function(specsData){
-            if (appName) {
-                self.getComponent(appName, self.props, null, false, specsData);
-            } else if (menuName) {
+            if (appName && componentName) {
+                self.getComponent(appName, self.props, null, false, specsData, componentName)
+            } else if (appName) {
+                self.getComponent(appName, self.props, null, false, specsData,null);
+            }  else if (menuName) {
                 self.loadMenu(menuName, specsData,self.props);
             } else if (loadInternalRoute){
                 self.loadRoute(specsData,self.props);
@@ -221,11 +237,14 @@ export default class AppComponent extends Component {
         let appName = nextProps.appName;
         let menuName = nextProps.menuName;
         let loadInternalRoute = nextProps.loadInternalRoute;
+        let componentName = nextProps.componentName;
         let self = this;
         this.currentBundle = 0;
         this.getSpecs(function (specsData) {
-            if (appName) {
-                self.getComponent(appName, nextProps, null, false, specsData);
+            if (appName && componentName) {
+                self.getComponent(appName, nextProps, null, false, specsData, componentName)
+            } else if (appName) {
+                self.getComponent(appName, nextProps, null, false, specsData,null);
             } else if (menuName) {
                 self.loadMenu(menuName, specsData, nextProps);
             } else if (loadInternalRoute){
