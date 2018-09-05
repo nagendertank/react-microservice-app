@@ -24,12 +24,12 @@ export default class AppComponent extends Component {
         this.currentBundle = 0;
     }
 
-    getSpecs(callback){
+    getSpecs(props,callback){
         let self = this;
         if (internalCache.appSpecs && internalCache.appSpecs.length>0){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(this.props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
+            axios.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
@@ -38,10 +38,10 @@ export default class AppComponent extends Component {
         }
     }
 
-    getComponent(name, props, menuData, isMenu, specsData,componentName){
+    getComponent(name, props, menuData, isMenu, specsData, componentName, apiGwUrl){
         let self = this;
         this.setState({ loading:true});
-        LoadBundle(name, specsData, this.props.apiGwUrl, function (result, appDetail) {
+        LoadBundle(name, specsData, apiGwUrl, function (result, appDetail) {
                 if (result) {
                     if (isMenu) {
                         self.currentBundle++;
@@ -130,7 +130,7 @@ export default class AppComponent extends Component {
             });
     }
 
-    loadMenu(menuName, specsData, dataProps){
+    loadMenu(menuName, specsData, dataProps, apiGwUrl){
         let self = this;
             let menuData = [];
         Array.isArray(specsData) && specsData.forEach((service)=>{
@@ -148,7 +148,7 @@ export default class AppComponent extends Component {
 
             if(menuData.length>0){
                 menuData.forEach((data) => {
-                    self.getComponent(data.microService, dataProps, menuData, true, specsData,null);
+                    self.getComponent(data.microService, dataProps, menuData, true, specsData, null, apiGwUrl);
                 })
             }else{
                 this.setState({
@@ -158,7 +158,7 @@ export default class AppComponent extends Component {
             }
     }
 
-    loadRoute(specsData,dataProps){
+    loadRoute(specsData, dataProps, apiGwUrl){
         if (Array.isArray(specsData)){
             let self = this;
             this.setState({ loading: true });
@@ -174,7 +174,7 @@ export default class AppComponent extends Component {
                       params = re.exec('/' + dataProps.match.params[0])
                     }
                     if(params){
-                        LoadBundle(service.spec.name, specsData, dataProps.apiGwUrl, function (result, appDetail) {
+                        LoadBundle(service.spec.name, specsData, apiGwUrl, function (result, appDetail) {
                             if(result){
                                 let routeData = eval(appDetail.library).Routes;
                                 let component = null;
@@ -220,15 +220,22 @@ export default class AppComponent extends Component {
         let loadInternalRoute = this.props.loadInternalRoute;
         let componentName = this.props.componentName;
         let self = this;
-        this.getSpecs(function(specsData){
+        
+        this.getSpecs(this.props,function(response){
+            let apiGwUrl = response.cdn;
+            let specsData = response.specs;
+            if (!apiGwUrl) {
+                apiGwUrl = self.props.apiGwUrl;
+                specsData = response;
+            }
             if (appName && componentName) {
-                self.getComponent(appName, self.props, null, false, specsData, componentName)
+                self.getComponent(appName, self.props, null, false, specsData, componentName, apiGwUrl)
             } else if (appName) {
-                self.getComponent(appName, self.props, null, false, specsData,null);
+                self.getComponent(appName, self.props, null, false, specsData, null, apiGwUrl);
             }  else if (menuName) {
-                self.loadMenu(menuName, specsData,self.props);
+                self.loadMenu(menuName, specsData, self.props, apiGwUrl);
             } else if (loadInternalRoute){
-                self.loadRoute(specsData,self.props);
+                self.loadRoute(specsData, self.props, apiGwUrl);
             } 
         });
     }
@@ -240,15 +247,21 @@ export default class AppComponent extends Component {
         let componentName = nextProps.componentName;
         let self = this;
         this.currentBundle = 0;
-        this.getSpecs(function (specsData) {
+        this.getSpecs(nextProps,function (response) {
+            let apiGwUrl = response.cdn;
+            let specsData = response.specs;
+            if (!apiGwUrl) {
+                apiGwUrl = nextProps.apiGwUrl;
+                specsData = response;
+            }
             if (appName && componentName) {
-                self.getComponent(appName, nextProps, null, false, specsData, componentName)
+                self.getComponent(appName, nextProps, null, false, specsData, componentName, apiGwUrl)
             } else if (appName) {
-                self.getComponent(appName, nextProps, null, false, specsData,null);
+                self.getComponent(appName, nextProps, null, false, specsData, null, apiGwUrl);
             } else if (menuName) {
-                self.loadMenu(menuName, specsData, nextProps);
+                self.loadMenu(menuName, specsData, nextProps, apiGwUrl);
             } else if (loadInternalRoute){
-                self.loadRoute(specsData, nextProps);
+                self.loadRoute(specsData, nextProps, apiGwUrl);
             }
         });
     }
