@@ -47,5 +47,7 @@
     "react-dom": "^15.6.1",
     "react-test-renderer": "^15.6.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "lodash": "^4.17.10"
+  }
 }

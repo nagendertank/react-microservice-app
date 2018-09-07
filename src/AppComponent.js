@@ -3,7 +3,8 @@ import axios from 'axios';
 import LoadBundle from './LoadBundlesUtils';
 import * as internalCache from './internalCache';
 import pathToRegexp from 'path-to-regexp';
-import './app.css'
+import './app.css';
+import _ from 'lodash';
 
 export default class AppComponent extends Component {
     constructor(props){
@@ -26,7 +27,7 @@ export default class AppComponent extends Component {
 
     getSpecs(props,callback){
         let self = this;
-        if (internalCache.appSpecs && internalCache.appSpecs.length>0){
+        if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
             axios.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
