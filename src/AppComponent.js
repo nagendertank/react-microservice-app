@@ -30,7 +30,7 @@ export default class AppComponent extends Component {
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
+            axios.get(props.apiGwUrl+'/apigw/v1/register/UI',{withCredentials:true}).then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
