@@ -163,9 +163,12 @@ export default class AppComponent extends Component {
         if (Array.isArray(specsData)){
             let self = this;
             this.setState({ loading: true });
+            var isRouteFound = false;
+
             specsData.forEach((service)=>{
-            let routes = service.spec.sharedRoutes;
-            routes.some((route) => {
+            
+                let routes = service.spec.sharedRoutes;
+                routes.some((route) => {
                 if (dataProps.match.params) {
                     let re = pathToRegexp(route);
                     let params = null;
@@ -179,7 +182,6 @@ export default class AppComponent extends Component {
                             if(result){
                                 let routeData = eval(appDetail.library).Routes;
                                 let component = null;
-                                let isRouteFound = false;
                                 routeData.some((appRoute) => {
                                     if (appRoute.path === route) {
                                         let props = Object.assign({}, dataProps);
@@ -209,6 +211,8 @@ export default class AppComponent extends Component {
                     }
                 }    
                 });
+                if(isRouteFound)
+                    return true;
             });
         }else{
             this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
