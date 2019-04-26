@@ -17,7 +17,7 @@ export default class AppComponent extends Component {
             menuData:null,
             specs:null
         }
-      
+        this.routeErrorJSX = <div>Unable to load route</div>;
         this.getComponent = this.getComponent.bind(this);
         this.loadMenu = this.loadMenu.bind(this);
         this.getSpecs = this.getSpecs.bind(this);
@@ -194,7 +194,7 @@ export default class AppComponent extends Component {
                                             appDetail: appDetail,
                                             error: false
                                         });
-                                        return;
+                                        return true;
                                     }
                                 });
 
@@ -205,11 +205,12 @@ export default class AppComponent extends Component {
                                 self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
                             }
                         }); 
-                        return;
                     }else{
                         self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
                     }
                 }    
+                if(isRouteFound)
+                    return true;
                 });
                 if(isRouteFound)
                     return true;
