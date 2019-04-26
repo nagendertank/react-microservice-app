@@ -17,7 +17,7 @@ export default class AppComponent extends Component {
             menuData:null,
             specs:null
         }
-      
+        this.routeErrorJSX = <div>Unable to load route</div>;
         this.getComponent = this.getComponent.bind(this);
         this.loadMenu = this.loadMenu.bind(this);
         this.getSpecs = this.getSpecs.bind(this);
@@ -163,9 +163,12 @@ export default class AppComponent extends Component {
         if (Array.isArray(specsData)){
             let self = this;
             this.setState({ loading: true });
+            var isRouteFound = false;
+
             specsData.forEach((service)=>{
-            let routes = service.spec.sharedRoutes;
-            routes.some((route) => {
+            
+                let routes = service.spec.sharedRoutes;
+                routes.some((route) => {
                 if (dataProps.match.params) {
                     let re = pathToRegexp(route);
                     let params = null;
@@ -179,7 +182,6 @@ export default class AppComponent extends Component {
                             if(result){
                                 let routeData = eval(appDetail.library).Routes;
                                 let component = null;
-                                let isRouteFound = false;
                                 routeData.some((appRoute) => {
                                     if (appRoute.path === route) {
                                         let props = Object.assign({}, dataProps);
@@ -192,7 +194,7 @@ export default class AppComponent extends Component {
                                             appDetail: appDetail,
                                             error: false
                                         });
-                                        return;
+                                        return true;
                                     }
                                 });
 
@@ -203,12 +205,15 @@ export default class AppComponent extends Component {
                                 self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
                             }
                         }); 
-                        return;
                     }else{
                         self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
                     }
                 }    
+                if(isRouteFound)
+                    return true;
                 });
+                if(isRouteFound)
+                    return true;
             });
         }else{
             this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
