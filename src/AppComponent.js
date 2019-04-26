@@ -165,7 +165,7 @@ export default class AppComponent extends Component {
             this.setState({ loading: true });
             var isRouteFound = false;
 
-            specsData.forEach((service)=>{
+            specsData.some((service)=>{
             
                 let routes = service.spec.sharedRoutes;
                 routes.some((route) => {
