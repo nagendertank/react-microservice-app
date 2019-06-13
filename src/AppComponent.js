@@ -42,7 +42,7 @@ export default class AppComponent extends Component {
     getComponent(name, props, menuData, isMenu, specsData, componentName, apiGwUrl){
         let self = this;
         this.setState({ loading:true});
-        LoadBundle(name, specsData, apiGwUrl, function (result, appDetail) {
+        LoadBundle(name, specsData, apiGwUrl, props.token, function (result, appDetail) {
                 if (result) {
                     if (isMenu) {
                         self.currentBundle++;
@@ -178,7 +178,7 @@ export default class AppComponent extends Component {
                       params = re.exec('/' + dataProps.match.params[0])
                     }
                     if(params){
-                        LoadBundle(service.spec.name, specsData, apiGwUrl, function (result, appDetail) {
+                        LoadBundle(service.spec.name, specsData, apiGwUrl, dataProps.token, function (result, appDetail) {
                             if(result){
                                 let routeData = eval(appDetail.library).Routes;
                                 let component = null;
