@@ -1,12 +1,16 @@
 import * as internalCache from './internalCache';
 
-function __loadJS(jsElement, appDetail,apiGWURl, callback) {
+function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
     // DOM: Create the script element
     var jsElm = document.createElement("script");
     // set the type attribute
     jsElm.type = "text/javascript";
     // make the script element load file
     jsElm.src = apiGWURl + "/" + appDetail.name + '/' + appDetail.version +'/'+ jsElement.fileName+'.js';
+
+    if(token) {
+        jsElm.src = jsElm.src + "?token=" + token;
+    }
 
     if (jsElm.readyState) {  //IE
         jsElm.onreadystatechange = function () {
@@ -29,7 +33,7 @@ function __loadJS(jsElement, appDetail,apiGWURl, callback) {
     document.body.appendChild(jsElm);
 }
 
-function __loadCSS(cssElement, appDetail, apiGWURl, callback) {
+function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     var head = document.getElementsByTagName('head')[0];
     // DOM: Create the script element
     var cssElem = document.createElement("link");
@@ -39,6 +43,10 @@ function __loadCSS(cssElement, appDetail, apiGWURl, callback) {
     cssElem.rel ='stylesheet'
     // make the script element load file
     cssElem.href = apiGWURl + "/" + appDetail.name + "/" + appDetail.version + '/' + cssElement.fileName +'.css';
+
+    if(token) {
+        cssElem.href = cssElem.href + "?token=" + token;
+    }
 
     head.appendChild(cssElem);
 
@@ -62,7 +70,7 @@ function __loadCSS(cssElement, appDetail, apiGWURl, callback) {
     // finally insert the element to the body element in order to load the script
 }
 
-export default function loadBundles(name, specsData,apiGWURl,callback){
+export default function loadBundles(name, specsData,apiGWURl,token,callback){
     let self = this;
     let componentLoaded = internalCache.componentLoaded;
     if (!componentLoaded[name] || (componentLoaded[name] && !componentLoaded[name]['isLoaded'])) {
@@ -78,7 +86,7 @@ export default function loadBundles(name, specsData,apiGWURl,callback){
                     let appDetail = appData.spec; 
                     appDetail.resources.forEach(element => {
                         if (element.type==='javascript'){
-                            __loadJS(element, appDetail, apiGWURl,function (isLoaded) {
+                            __loadJS(element, appDetail, apiGWURl,token, function (isLoaded) {
                                 iterator++;
                                 if (isLoaded){
                                     if (iterator === appDetail.resources.length){
@@ -91,7 +99,7 @@ export default function loadBundles(name, specsData,apiGWURl,callback){
                                 }
                             });
                         }else{
-                            __loadCSS(element, appDetail,apiGWURl,function (isLoaded) {
+                            __loadCSS(element, appDetail,apiGWURl,token, function (isLoaded) {
                                 iterator++;
                                 if (isLoaded) {
                                     if (iterator === appDetail.resources.length) {
