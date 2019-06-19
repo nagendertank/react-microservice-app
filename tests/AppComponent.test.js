@@ -15,7 +15,7 @@ window.cascustomreports = {
 
 jest.mock('../src/LoadBundlesUtils', ()=>({
   __esModule: true, // this property is for ES export default
-  default: function(name, specsData,apiGWURl,callback){
+  default: function(name, specsData,apiGWURl, authToken,callback){
       
     callback(true,specsData[1].spec) //This needs to be generalized to accept any appDetails
   },
