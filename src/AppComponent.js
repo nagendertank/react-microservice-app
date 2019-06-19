@@ -149,7 +149,7 @@ export default class AppComponent extends Component {
                                 }
                             }
                         });
-                    }  else {
+                    }  else if(service.spec.navigation[0].menuName === menuName){
                         //No tabs available, so load the first component and return
                         let obj = Object.assign({},{
                             'componentName' : service.spec.navigation[0].componentName,
