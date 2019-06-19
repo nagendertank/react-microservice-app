@@ -1,8 +1,26 @@
 import AppComponent from '../src/AppComponent';
+import React, { Component } from 'react'
 
 const getInstance = () => {
   return wrapper.instance();
 };
+
+window.cascustomreports = {
+  "ReportList" : class ReportList extends Component {
+      render() {
+        return <div>Dummy MicroApp</div>
+      }
+    }
+}
+
+jest.mock('../src/LoadBundlesUtils', ()=>({
+  __esModule: true, // this property is for ES export default
+  default: function(name, specsData,apiGWURl,callback){
+      
+    callback(true,specsData[1].spec) //This needs to be generalized to accept any appDetails
+  },
+
+}));
 
 let wrapper = null;
 const specs = [
@@ -59,30 +77,81 @@ const specs = [
           "library": "App2"
         },
         "type": "UI"
-      }
+      },{
+        "service_name": "CASReports",
+        "spec": {
+            "name": "CASReports",
+            "version": "1.0",
+            "servers": [
+                {
+                    "url": "http://localhost:9000",
+                    "description": "local"
+                }
+            ],
+            "resources": [
+                {
+                    "type": "javascript",
+                    "fileName": "cascustomreports_bundle",
+                    "extension": "js"
+                },
+                {
+                    "type": "css",
+                    "fileName": "cascustomreports_main",
+                    "extension": "css"
+                }
+                
+            ],
+            "navigation": [
+                {
+                    "menuName": "CustomReports",
+                    "componentName": "ReportList"
+                }
+            ],
+            "sharedRoutes": [
+                "/customreports",
+                "/customreports/create",
+                "/customreports/view",
+                "/customreports/edit"
+            ],
+            "library": "cascustomreports"
+        },
+        "type": "UI"
+    }
     ];
 
 
 describe('Test React Microservice Component', () => {
-  test('Verify override component renders even match menu not available', (done) => {
+  // test('Verify override component renders even match menu not available', (done) => {
+   
+  //   axiosMockAdapter.onGet('/apigw/v1/register/UI').reply(200, specs);
+  
+  //   let wrapper = shallow(<AppComponent menuName="Security" overrideComponent={OverrideComponent} routeUrl="/security" apiGwUrl={''} />);
+  //   wrapper.instance().loadMenu = jest.fn(() => {
+  //       wrapper
+  //         .instance()
+  //         .setState({
+  //           loading: false,
+  //         },()=>{
+  //           jestExpect(wrapper.find(OverrideComponent).length).toEqual(1);
+  //           done();
+  //         });
+  //     });
+
+  //     jestExpect(wrapper.text()).toEqual('loading...');
+
+  // });
+
+  test('Load single component when tabs not mentioned in navigation', (done) => {
    
     axiosMockAdapter.onGet('/apigw/v1/register/UI').reply(200, specs);
   
-    let wrapper = shallow(<AppComponent menuName="Security" overrideComponent={OverrideComponent} routeUrl="/security" apiGwUrl={''} />);
-    wrapper.instance().loadMenu = jest.fn(() => {
-        wrapper
-          .instance()
-          .setState({
-            loading: false,
-          },()=>{
-            jestExpect(wrapper.find(OverrideComponent).length).toEqual(1);
-            done();
-          });
-      });
-
-      jestExpect(wrapper.text()).toEqual('loading...');
-
+    let wrapper = shallow(<AppComponent menuName="CustomReports" routeUrl="/customreports" apiGwUrl={''} />);
+    setTimeout(()=>{
+      wrapper.update()
+      jestExpect(wrapper.html()).toMatchSnapshot();
+      done()
+    },1000)
+    
   });
-
   
 });
