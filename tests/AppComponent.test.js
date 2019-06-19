@@ -121,25 +121,25 @@ const specs = [
 
 
 describe('Test React Microservice Component', () => {
-  // test('Verify override component renders even match menu not available', (done) => {
+  test('Verify override component renders even match menu not available', (done) => {
    
-  //   axiosMockAdapter.onGet('/apigw/v1/register/UI').reply(200, specs);
+    axiosMockAdapter.onGet('/apigw/v1/register/UI').reply(200, specs);
   
-  //   let wrapper = shallow(<AppComponent menuName="Security" overrideComponent={OverrideComponent} routeUrl="/security" apiGwUrl={''} />);
-  //   wrapper.instance().loadMenu = jest.fn(() => {
-  //       wrapper
-  //         .instance()
-  //         .setState({
-  //           loading: false,
-  //         },()=>{
-  //           jestExpect(wrapper.find(OverrideComponent).length).toEqual(1);
-  //           done();
-  //         });
-  //     });
+    let wrapper = shallow(<AppComponent menuName="Security" overrideComponent={OverrideComponent} routeUrl="/security" apiGwUrl={''} />);
+    wrapper.instance().loadMenu = jest.fn(() => {
+        wrapper
+          .instance()
+          .setState({
+            loading: false,
+          },()=>{
+            jestExpect(wrapper.find(OverrideComponent).length).toEqual(1);
+            done();
+          });
+      });
 
-  //     jestExpect(wrapper.text()).toEqual('loading...');
+      jestExpect(wrapper.text()).toEqual('loading...');
 
-  // });
+  });
 
   test('Load single component when tabs not mentioned in navigation', (done) => {
    
