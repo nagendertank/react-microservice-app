@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test React Microservice Component Load single component when tabs not mentioned in navigation 1`] = `"<div><div>Dummy MicroApp</div></div>"`;
