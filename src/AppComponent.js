@@ -55,7 +55,7 @@ export default class AppComponent extends Component {
                         }
                     } else if (componentName){
                         if (eval(appDetail.library)) {
-                            let component = React.createElement(eval(appDetail.library)[componentName], self.props);
+                            let component = React.createElement(eval(appDetail.library)[componentName], {...self.props, ...appDetail});
                             self.setState({
                                 loading: false,
                                 component,
@@ -75,7 +75,7 @@ export default class AppComponent extends Component {
                             let path = window.location.pathname.replace(self.props.routeUrl, '')
                             routeData.some((route) => {
                                 if (path === '' || path==='/'){
-                                    component = React.createElement(route.component, self.props);
+                                    component = React.createElement(route.component, {...self.props, ...appDetail});
                                     return;
                                 }else{
                                     if (self.props.match.params){
@@ -83,7 +83,7 @@ export default class AppComponent extends Component {
                                         let params = re.exec(self.props.match.params[0])
                                         let props = Object.assign({}, self.props,self.props);
                                         props.match.params = params;
-                                        component = React.createElement(route.component, props);
+                                        component = React.createElement(route.component, {props, ...appDetail});
                                         return;
                                     }
                                 }
@@ -102,7 +102,7 @@ export default class AppComponent extends Component {
                                 let component = null;
                                 routeData.some((route) => {
                                     if (self.props.match.url && self.props.match.url === self.props.routeUrl) {
-                                        component = React.createElement(route.component, self.props);
+                                        component = React.createElement(route.component, {...self.props, ...appDetail});
                                         return;
                                     }else{
                                         if (self.props.match.params) {
@@ -110,7 +110,7 @@ export default class AppComponent extends Component {
                                             let params = re.exec(self.props.match.params[0])
                                             let props = Object.assign({}, self.props);
                                             props.match.params = params;
-                                            component = React.createElement(route.component, props);
+                                            component = React.createElement(route.component, {...props, ...appDetail});
                                             return;
                                         }
                                     }
@@ -201,6 +201,7 @@ export default class AppComponent extends Component {
                                     if (appRoute.path === route) {
                                         let props = Object.assign({}, dataProps);
                                         props.match.params = params;
+                                        //Currently not supporting passing of context to component based on routes
                                         component = React.createElement(appRoute.component, props);
                                         isRouteFound = true;
                                         self.setState({
