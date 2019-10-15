@@ -180,16 +180,15 @@ export default class AppComponent extends Component {
             this.setState({
                 loading: true
             });
-            var isRouteComponentFound = false,
+            let isRouteComponentFound = false,
                 isRouteFoundInSpec = false,
                 validSpec = undefined,
-                routeMatch = undefined,
                 params = null;
 
-            specsData.some((service) => {
+            isRouteFoundInSpec = specsData.some((service) => {
 
                 let routes = service.spec.sharedRoutes;
-                routes.some((route) => {
+                return routes.some((route) => {
                     if (dataProps.match.params) {
                         let re = pathToRegexp(route);
                         params = null;
@@ -200,15 +199,11 @@ export default class AppComponent extends Component {
                             params = re.exec('/' + dataProps.match.params[0])
                         }
                         if (params) {
-                            isRouteFoundInSpec = true;
                             validSpec = service.spec;
-                            routeMatch = route;
                             return true;  //Exit loop if route found
                         }
                     }
-                });
-                if (isRouteFoundInSpec)  //Exit loop if route found
-                    return true;
+                }); //Exit loop if route found
             });
 
             if(isRouteFoundInSpec) {
@@ -218,7 +213,8 @@ export default class AppComponent extends Component {
                         let routeData = eval(appDetail.library).Routes;
                         let component = null;
                         routeData.some((appRoute) => {
-                            if (appRoute.path === routeMatch) {
+                            let curRoute = dataProps.match.params[0];
+                            if (appRoute.path === (curRoute.startsWith('/') ? curRoute : '/'+curRoute)) {
                                 let props = Object.assign({}, dataProps);
                                 props.match.params = params;
                                 //Currently not supporting passing of context to component based on routes
@@ -235,15 +231,15 @@ export default class AppComponent extends Component {
                         });
 
                         if (!isRouteComponentFound){
-                            self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+                            self.setState({ loading: false, component: this.routeErrorJSX, error: true });
                         }
                     }else{
                         self.setState({ loading: false, component: <div>Unable to load resource</div>, error: true });
                     }
                 }); 
-            } else this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });  //Show error if route is not in sharedRoutes
+            } else this.setState({ loading: false, component: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
         }else{
-            this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+            this.setState({ loading: false, component: this.routeErrorJSX, error: true });
         }
     }
 
