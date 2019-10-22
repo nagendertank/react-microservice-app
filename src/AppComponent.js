@@ -175,64 +175,71 @@ export default class AppComponent extends Component {
     }
 
     loadRoute(specsData, dataProps, apiGwUrl){
-        if (Array.isArray(specsData)){
+        if (Array.isArray(specsData)) {
             let self = this;
-            this.setState({ loading: true });
-            var isRouteFound = false;
-
-            specsData.some((service)=>{
-            
-                let routes = service.spec.sharedRoutes;
-                routes.some((route) => {
-                if (dataProps.match.params) {
-                    let re = pathToRegexp(route);
-                    let params = null;
-                  if (dataProps.match.params[0].startsWith('/')){
-                      params = re.exec(dataProps.match.params[0])
-                    }else{
-                      params = re.exec('/' + dataProps.match.params[0])
-                    }
-                    if(params){
-                        LoadBundle(service.spec.name, specsData, apiGwUrl, dataProps.token, function (result, appDetail) {
-                            if(result){
-                                let routeData = eval(appDetail.library).Routes;
-                                let component = null;
-                                routeData.some((appRoute) => {
-                                    if (appRoute.path === route) {
-                                        let props = Object.assign({}, dataProps);
-                                        props.match.params = params;
-                                        //Currently not supporting passing of context to component based on routes
-                                        component = React.createElement(appRoute.component, props);
-                                        isRouteFound = true;
-                                        self.setState({
-                                            loading: false,
-                                            component,
-                                            appDetail: appDetail,
-                                            error: false
-                                        });
-                                        return true;
-                                    }
-                                });
-
-                                if (!isRouteFound){
-                                    self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
-                                }
-                            }else{
-                                self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
-                            }
-                        }); 
-                    }else{
-                        self.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
-                    }
-                }    
-                if(isRouteFound)
-                    return true;
-                });
-                if(isRouteFound)
-                    return true;
+            this.setState({
+                loading: true
             });
+            let isRouteComponentFound = false,
+                isRouteFoundInSpec = false,
+                validSpec = undefined,
+                params = null;
+
+            isRouteFoundInSpec = specsData.some((service) => {
+
+                let routes = service.spec.sharedRoutes;
+                return routes.some((route) => {
+                    if (dataProps.match.params) {
+                        let re = pathToRegexp(route);
+                        params = null;
+
+                        if (dataProps.match.params[0].startsWith('/')) {
+                            params = re.exec(dataProps.match.params[0])
+                        } else {
+                            params = re.exec('/' + dataProps.match.params[0])
+                        }
+                        if (params) {
+                            validSpec = service.spec;
+                            return true;  //Exit loop if route found
+                        }
+                    }
+                }); //Exit loop if route found
+            });
+
+            if(isRouteFoundInSpec) {
+                //Error handling will fail here if there are multiple JS bundles..
+                LoadBundle(validSpec.name, specsData, apiGwUrl, dataProps.token, function (result, appDetail) {
+                    if(result){
+                        let routeData = eval(appDetail.library).Routes;
+                        let component = null;
+                        routeData.some((appRoute) => {
+                            let curRoute = dataProps.match.params[0];
+                            if (appRoute.path === (curRoute.startsWith('/') ? curRoute : '/'+curRoute)) {
+                                let props = Object.assign({}, dataProps);
+                                props.match.params = params;
+                                //Currently not supporting passing of context to component based on routes
+                                component = React.createElement(appRoute.component, props);
+                                isRouteComponentFound = true;
+                                self.setState({
+                                    loading: false,
+                                    component,
+                                    appDetail: appDetail,
+                                    error: false
+                                });
+                                return true;
+                            }
+                        });
+
+                        if (!isRouteComponentFound){
+                            self.setState({ loading: false, component: this.routeErrorJSX, error: true });
+                        }
+                    }else{
+                        self.setState({ loading: false, component: <div>Unable to load resource</div>, error: true });
+                    }
+                }); 
+            } else this.setState({ loading: false, component: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
         }else{
-            this.setState({ loading: false, component: <div>Unable to load route</div>, error: true });
+            this.setState({ loading: false, component: this.routeErrorJSX, error: true });
         }
     }
 
