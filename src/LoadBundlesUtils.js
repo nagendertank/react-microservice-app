@@ -5,8 +5,13 @@ function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
     var jsElm = document.createElement("script");
     // set the type attribute
     jsElm.type = "text/javascript";
-    // make the script element load file
-    jsElm.src = apiGWURl + "/" + appDetail.containerName + '/' + jsElement.fileName+'.js';
+    
+    if (appDetail.servers && appDetail.servers.length > 0 && appDetail.servers[0].description === 'local') {
+        jsElm.src = apiGWURl + "/" + appDetail.name + "/" + appDetail.version + "/" + jsElement.fileName + '.js';
+    } else {
+        // make the script element load file
+        jsElm.src = apiGWURl + "/" + appDetail.containerName + '/' + jsElement.fileName + '.js';
+    }
 
     if(token) {
         jsElm.src = jsElm.src + "?token=" + token;
@@ -41,8 +46,12 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     cssElem.type = "text/css";
 
     cssElem.rel ='stylesheet'
-    // make the script element load file
-    cssElem.href = apiGWURl + "/" + appDetail.containerName + "/" + cssElement.fileName +'.css';
+    if (appDetail.servers && appDetail.servers.length > 0 && appDetail.servers[0].description === 'local') {
+        cssElem.href = apiGWURl + "/" + appDetail.name + "/" + appDetail.version + "/" + cssElement.fileName + '.css';
+    } else {
+        // make the script element load file
+        cssElem.href = apiGWURl + "/" + appDetail.containerName + "/" + cssElement.fileName + '.css';
+    }
 
     if(token) {
         cssElem.href = cssElem.href + "?token=" + token;

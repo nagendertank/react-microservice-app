@@ -15,7 +15,8 @@ export default class AppComponent extends Component {
             appDetail:null,
             error:false,
             menuData:null,
-            specs:null
+            specs:null,
+            hasError: false
         }
         this.routeErrorJSX = <div>Unable to load route</div>;
         this.getComponent = this.getComponent.bind(this);
@@ -295,8 +296,18 @@ export default class AppComponent extends Component {
         });
     }
 
+    componentDidCatch(error, info) {
+        console.log(error);
+    }
+    
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+      }
 
     render() {
+        if (this.state.hasError) {
+            return <h2 style={{textAlign: 'center', padding:'10px'}}>Something went wrong.</h2>;
+        }
         if (this.state.loading){
             return (
                 this.props.loaderComponent ? this.props.loaderComponent : <div className='lmask'>loading...</div>
