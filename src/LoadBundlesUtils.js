@@ -87,39 +87,45 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
 
             componentLoaded[name] = [];
         if (serviceSpec && serviceSpec.length > 0) {
-            let appData = serviceSpec[0];
+                let appData = serviceSpec[0];
                 let iterator = 0;
-                if (appData && appData.spec && appData.spec.resources.length>0){
-                    let appDetail = appData.spec; 
-                    appDetail.resources.forEach(element => {
-                        if (element.type==='javascript'){
-                            __loadJS(element, appDetail, apiGWURl,token, function (isLoaded) {
-                                iterator++;
-                                if (isLoaded){
-                                    if (iterator === appDetail.resources.length){
-                                        componentLoaded[name]['isLoaded'] = true;
-                                        componentLoaded[name]['appDetail'] = appDetail;
-                                        callback(true, appDetail);
+                if (appData && appData.spec && appData.spec.resources.length>0 && token && token.azureKeyPromise){
+                    token.azureKeyPromise().then(azureToken=>{
+                        let bundleQueryParams = token.cdnToken + "&" + azureToken;
+                        let appDetail = appData.spec; 
+                        appDetail.resources.forEach(element => {
+                            if (element.type==='javascript'){
+                                __loadJS(element, appDetail, apiGWURl,bundleQueryParams , function (isLoaded) {
+                                    iterator++;
+                                    if (isLoaded){
+                                        if (iterator === appDetail.resources.length){
+                                            componentLoaded[name]['isLoaded'] = true;
+                                            componentLoaded[name]['appDetail'] = appDetail;
+                                            callback(true, appDetail);
+                                        }
+                                    }else{
+                                        callback(false);
                                     }
-                                }else{
-                                    callback(false);
-                                }
-                            });
-                        }else{
-                            __loadCSS(element, appDetail,apiGWURl,token, function (isLoaded) {
-                                iterator++;
-                                if (isLoaded) {
-                                    if (iterator === appDetail.resources.length) {
-                                        componentLoaded[name]['isLoaded'] = true;
-                                        componentLoaded[name]['appDetail'] = appDetail;
-                                        callback(true, appDetail);
+                                });
+                            }else{
+                                __loadCSS(element, appDetail,apiGWURl,bundleQueryParams , function (isLoaded) {
+                                    iterator++;
+                                    if (isLoaded) {
+                                        if (iterator === appDetail.resources.length) {
+                                            componentLoaded[name]['isLoaded'] = true;
+                                            componentLoaded[name]['appDetail'] = appDetail;
+                                            callback(true, appDetail);
+                                        }
+                                    } else {
+                                        callback(false);
                                     }
-                                } else {
-                                    callback(false);
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+                        });
+                    })
+                    .catch((err)=>{
+                        callback(false)
+                    })
                 }else{
                     callback(false);
                 }
