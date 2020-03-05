@@ -5,12 +5,8 @@ function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
     var jsElm = document.createElement("script");
     // set the type attribute
     jsElm.type = "text/javascript";
-    
-    if (appDetail.containerName) {
-        jsElm.src = apiGWURl + "/" + appDetail.containerName + '/' + jsElement.fileName + '.js';
-    } else {
-        jsElm.src = apiGWURl + "/" + appDetail.name + "/" + appDetail.version + "/" + jsElement.fileName + '.js';
-    }
+    // make the script element load file
+    jsElm.src = apiGWURl + "/" + appDetail.containerName + '/' + jsElement.fileName+'.js';
 
     if(token) {
         jsElm.src = jsElm.src + "?token=" + token;
@@ -45,11 +41,8 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     cssElem.type = "text/css";
 
     cssElem.rel ='stylesheet'
-    if (appDetail.containerName) {
-        cssElem.href = apiGWURl + "/" + appDetail.containerName + "/" + cssElement.fileName + '.css';
-    } else {
-        cssElem.href = apiGWURl + "/" + appDetail.name + "/" + appDetail.version + "/" + cssElement.fileName + '.css';
-    }
+    // make the script element load file
+    cssElem.href = apiGWURl + "/" + appDetail.containerName + "/" + cssElement.fileName +'.css';
 
     if(token) {
         cssElem.href = cssElem.href + "?token=" + token;
@@ -77,6 +70,12 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     // finally insert the element to the body element in order to load the script
 }
 
+function checkToken(token){
+    if(token && token.tokenPromise)
+        return token.tokenPromise()
+    else return Promise.resolve()
+}
+
 export default function loadBundles(name, specsData,apiGWURl,token,callback){
     let self = this;
     let componentLoaded = internalCache.componentLoaded;
@@ -89,13 +88,13 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
         if (serviceSpec && serviceSpec.length > 0) {
                 let appData = serviceSpec[0];
                 let iterator = 0;
-                if (appData && appData.spec && appData.spec.resources.length>0 && token && token.azureKeyPromise){
-                    token.azureKeyPromise().then(azureToken=>{
-                        let bundleQueryParams = token.cdnToken + "&" + azureToken;
+                if (appData && appData.spec && appData.spec.resources.length>0){
+                    checkToken(token).then(tokenPromise=>{
+                        let bundleQueryParams = tokenPromise ? token.staticToken + "&" + tokenPromise : token;
                         let appDetail = appData.spec; 
                         appDetail.resources.forEach(element => {
                             if (element.type==='javascript'){
-                                __loadJS(element, appDetail, apiGWURl,bundleQueryParams , function (isLoaded) {
+                                __loadJS(element, appDetail, apiGWURl,bundleQueryParams, function (isLoaded) {
                                     iterator++;
                                     if (isLoaded){
                                         if (iterator === appDetail.resources.length){
@@ -108,7 +107,7 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                                     }
                                 });
                             }else{
-                                __loadCSS(element, appDetail,apiGWURl,bundleQueryParams , function (isLoaded) {
+                                __loadCSS(element, appDetail,apiGWURl,bundleQueryParams, function (isLoaded) {
                                     iterator++;
                                     if (isLoaded) {
                                         if (iterator === appDetail.resources.length) {
