@@ -13,7 +13,7 @@ function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
     }
 
     if(token) {
-        jsElm.src = jsElm.src + "?token=" + token;
+        jsElm.src = jsElm.src + token;
     }
 
     if (jsElm.readyState) {  //IE
@@ -52,7 +52,7 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     }
 
     if(token) {
-        cssElem.href = cssElem.href + "?token=" + token;
+        cssElem.href = cssElem.href + token;
     }
 
     head.appendChild(cssElem);
