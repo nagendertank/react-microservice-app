@@ -13,7 +13,7 @@ function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
     }
 
     if(token) {
-        jsElm.src = jsElm.src + "?token=" + token;
+        jsElm.src = jsElm.src + token;
     }
 
     if (jsElm.readyState) {  //IE
@@ -52,7 +52,7 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     }
 
     if(token) {
-        cssElem.href = cssElem.href + "?token=" + token;
+        cssElem.href = cssElem.href + token;
     }
 
     head.appendChild(cssElem);
@@ -77,6 +77,12 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
     // finally insert the element to the body element in order to load the script
 }
 
+function checkToken(token){
+    if(token && token.tokenPromise)
+        return token.tokenPromise()
+    else return Promise.resolve()
+}
+
 export default function loadBundles(name, specsData,apiGWURl,token,callback){
     let self = this;
     let componentLoaded = internalCache.componentLoaded;
@@ -87,39 +93,45 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
 
             componentLoaded[name] = [];
         if (serviceSpec && serviceSpec.length > 0) {
-            let appData = serviceSpec[0];
+                let appData = serviceSpec[0];
                 let iterator = 0;
                 if (appData && appData.spec && appData.spec.resources.length>0){
-                    let appDetail = appData.spec; 
-                    appDetail.resources.forEach(element => {
-                        if (element.type==='javascript'){
-                            __loadJS(element, appDetail, apiGWURl,token, function (isLoaded) {
-                                iterator++;
-                                if (isLoaded){
-                                    if (iterator === appDetail.resources.length){
-                                        componentLoaded[name]['isLoaded'] = true;
-                                        componentLoaded[name]['appDetail'] = appDetail;
-                                        callback(true, appDetail);
+                    checkToken(token).then(tokenPromise=>{
+                        let bundleQueryParams = tokenPromise ? token.staticToken + "&" + tokenPromise : token;
+                        let appDetail = appData.spec; 
+                        appDetail.resources.forEach(element => {
+                            if (element.type==='javascript'){
+                                __loadJS(element, appDetail, apiGWURl,bundleQueryParams, function (isLoaded) {
+                                    iterator++;
+                                    if (isLoaded){
+                                        if (iterator === appDetail.resources.length){
+                                            componentLoaded[name]['isLoaded'] = true;
+                                            componentLoaded[name]['appDetail'] = appDetail;
+                                            callback(true, appDetail);
+                                        }
+                                    }else{
+                                        callback(false);
                                     }
-                                }else{
-                                    callback(false);
-                                }
-                            });
-                        }else{
-                            __loadCSS(element, appDetail,apiGWURl,token, function (isLoaded) {
-                                iterator++;
-                                if (isLoaded) {
-                                    if (iterator === appDetail.resources.length) {
-                                        componentLoaded[name]['isLoaded'] = true;
-                                        componentLoaded[name]['appDetail'] = appDetail;
-                                        callback(true, appDetail);
+                                });
+                            }else{
+                                __loadCSS(element, appDetail,apiGWURl,bundleQueryParams, function (isLoaded) {
+                                    iterator++;
+                                    if (isLoaded) {
+                                        if (iterator === appDetail.resources.length) {
+                                            componentLoaded[name]['isLoaded'] = true;
+                                            componentLoaded[name]['appDetail'] = appDetail;
+                                            callback(true, appDetail);
+                                        }
+                                    } else {
+                                        callback(false);
                                     }
-                                } else {
-                                    callback(false);
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+                        });
+                    })
+                    .catch((err)=>{
+                        callback(false)
+                    })
                 }else{
                     callback(false);
                 }
@@ -133,4 +145,3 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
         callback(false);
     }
 }
-
