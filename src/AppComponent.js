@@ -22,8 +22,16 @@ export default class AppComponent extends Component {
         this.getComponent = this.getComponent.bind(this);
         this.loadMenu = this.loadMenu.bind(this);
         this.getSpecs = this.getSpecs.bind(this);
+        this.getAxiosInstance = this.getAxiosInstance.bind(this);
         this.loadRoute = this.loadRoute.bind(this);
         this.currentBundle = 0;
+    }
+
+    getAxiosInstance() {
+        const axiosInstance = this.props.customAxiosInstance ? this.props.customAxiosInstance : axios.create({
+            withCredentials: true
+        });
+        return axiosInstance;
     }
 
     getSpecs(props,callback){
@@ -31,7 +39,7 @@ export default class AppComponent extends Component {
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(props.apiGwUrl+'/apigw/v1/register/UI',{withCredentials:true}).then((res) => {
+            self.getAxiosInstance().get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
