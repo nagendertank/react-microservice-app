@@ -5,6 +5,7 @@ import * as internalCache from './internalCache';
 import pathToRegexp from 'path-to-regexp';
 import './app.css';
 import _ from 'lodash';
+import {axiosInstance} from './axiosInstance'
 
 export default class AppComponent extends Component {
     constructor(props){
@@ -28,10 +29,11 @@ export default class AppComponent extends Component {
 
     getSpecs(props,callback){
         let self = this;
+        const api = this.props.customAxiosInstance ? this.props.customAxiosInstance : axiosInstance
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(props.apiGwUrl+'/apigw/v1/register/UI',{withCredentials:true}).then((res) => {
+            api.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
