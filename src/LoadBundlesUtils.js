@@ -89,7 +89,9 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
         if (serviceSpec && serviceSpec.length > 0) {
             let appData = serviceSpec[0];
                 let iterator = 0;
+                let bundleQueryParams = "?";
                 if (appData && appData.spec && appData.spec.resources.length>0){
+                    bundleQueryParams += tokenPromise ? (token.parseData? token.parseData(tokenPromise):tokenPromise) : token;
                     let appDetail = appData.spec; 
                     appDetail.resources.forEach(element => {
                         if (element.type==='javascript'){
