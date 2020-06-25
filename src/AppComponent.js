@@ -5,6 +5,7 @@ import * as internalCache from './internalCache';
 import pathToRegexp from 'path-to-regexp';
 import './app.css';
 import _ from 'lodash';
+import {axiosInstance} from './axiosInstance'
 
 export default class AppComponent extends Component {
     constructor(props){
@@ -28,10 +29,11 @@ export default class AppComponent extends Component {
 
     getSpecs(props,callback){
         let self = this;
+        const api = this.props.customAxiosInstance ? this.props.customAxiosInstance : axiosInstance
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(props.apiGwUrl+'/apigw/v1/register/UI',{withCredentials:true}).then((res) => {
+            api.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
@@ -324,18 +326,18 @@ export default class AppComponent extends Component {
                 )
             }else{
                let component = React.createElement(this.props.overrideComponent,{
-                   appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
+                error:false, appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
                })
                 return component;
             }
         } else if (this.state.error && this.props.overrideComponent){
             let component = React.createElement(this.props.overrideComponent, {
-                appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
+                error:true, appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
             });
             return component;
         }else{
             return (
-                this.props.notFound ? this.props.notFound():
+                this.props.fallbackComponent ? this.props.fallbackComponent:
                 <div>
                     {this.state.component || 'Unable to load component'}
                 </div>
