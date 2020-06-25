@@ -79,7 +79,7 @@ export default class AppComponent extends Component {
                             routeData.some((route) => {
                                 if (path === '' || path==='/'){
                                     component = React.createElement(route.component, {...self.props, ...appDetail});
-                                    return;
+                                    return true;
                                 }else{
                                     if (self.props.match.params){
                                         let re = pathToRegexp(route.path);
@@ -87,7 +87,7 @@ export default class AppComponent extends Component {
                                         let props = Object.assign({}, self.props,self.props);
                                         props.match.params = params;
                                         component = React.createElement(route.component, {props, ...appDetail});
-                                        return;
+                                        return true;
                                     }
                                 }
                             });
