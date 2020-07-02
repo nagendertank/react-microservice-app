@@ -234,7 +234,7 @@ export default class AppComponent extends Component {
                         });
 
                         if (!isRouteComponentFound){
-                            self.setState({ loading: false, component: this.routeErrorJSX, error: true });
+                            self.setState({ loading: false, component: self.routeErrorJSX, error: true });
                         }
                     }else{
                         self.setState({ loading: false, component: <div>Unable to load resource</div>, error: true });
