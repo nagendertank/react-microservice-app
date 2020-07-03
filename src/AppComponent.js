@@ -15,6 +15,7 @@ export default class AppComponent extends Component {
             component:null,
             appDetail:null,
             error:false,
+            errorComponent: null,
             menuData:null,
             specs:null,
             hasError: false
@@ -37,7 +38,7 @@ export default class AppComponent extends Component {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
-                self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
             })
         }
     }
@@ -58,7 +59,7 @@ export default class AppComponent extends Component {
                         }
                     } else if (componentName){
                         if (eval(appDetail.library)) {
-                            let component = React.createElement(eval(appDetail.library)[componentName], {...self.props, ...appDetail});
+                            let component = eval(appDetail.library)[componentName];
                             self.setState({
                                 loading: false,
                                 component,
@@ -67,7 +68,7 @@ export default class AppComponent extends Component {
                             });
                             return;
                         }else{
-                            self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                            self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                         }
                     } else {
                         if (eval(appDetail.library)) {
@@ -78,7 +79,7 @@ export default class AppComponent extends Component {
                             let path = window.location.pathname.replace(self.props.routeUrl, '')
                             routeData.some((route) => {
                                 if (path === '' || path==='/'){
-                                    component = React.createElement(route.component, {...self.props, ...appDetail});
+                                    component = route.component;
                                     return;
                                 }else{
                                     if (self.props.match.params){
@@ -86,7 +87,7 @@ export default class AppComponent extends Component {
                                         let params = re.exec(self.props.match.params[0])
                                         let props = Object.assign({}, self.props,self.props);
                                         props.match.params = params;
-                                        component = React.createElement(route.component, {props, ...appDetail});
+                                        component = route.component;
                                         return;
                                     }
                                 }
@@ -105,7 +106,7 @@ export default class AppComponent extends Component {
                                 let component = null;
                                 routeData.some((route) => {
                                     if (self.props.match.url && self.props.match.url === self.props.routeUrl) {
-                                        component = React.createElement(route.component, {...self.props, ...appDetail});
+                                        component = route.component;
                                         return;
                                     }else{
                                         if (self.props.match.params) {
@@ -113,7 +114,7 @@ export default class AppComponent extends Component {
                                             let params = re.exec(self.props.match.params[0])
                                             let props = Object.assign({}, self.props);
                                             props.match.params = params;
-                                            component = React.createElement(route.component, {...props, ...appDetail});
+                                            component = route.component;
                                             return;
                                         }
                                     }
@@ -129,7 +130,7 @@ export default class AppComponent extends Component {
                         }
                     }
                 } else {
-                    self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                    self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                 }
             });
     }
@@ -221,7 +222,7 @@ export default class AppComponent extends Component {
                                 let props = Object.assign({}, dataProps);
                                 props.match.params = params;
                                 //Currently not supporting passing of context to component based on routes
-                                component = React.createElement(appRoute.component, props);
+                                component = appRoute.component;
                                 isRouteComponentFound = true;
                                 self.setState({
                                     loading: false,
@@ -234,15 +235,15 @@ export default class AppComponent extends Component {
                         });
 
                         if (!isRouteComponentFound){
-                            self.setState({ loading: false, component: self.routeErrorJSX, error: true });
+                            self.setState({ loading: false, errorComponent: self.routeErrorJSX, error: true });
                         }
                     }else{
-                        self.setState({ loading: false, component: <div>Unable to load resource</div>, error: true });
+                        self.setState({ loading: false, errorComponent: <div>Unable to load resource</div>, error: true });
                     }
                 }); 
-            } else this.setState({ loading: false, component: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
+            } else this.setState({ loading: false, errorComponent: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
         }else{
-            this.setState({ loading: false, component: this.routeErrorJSX, error: true });
+            this.setState({ loading: false, errorComponent: this.routeErrorJSX, error: true });
         }
     }
 
@@ -321,7 +322,7 @@ export default class AppComponent extends Component {
             if (!this.props.overrideComponent){
                 return (
                     <div>
-                        {this.state.component}
+                        {React.createElement(this.state.component, { ...this.props, ...this.state.appDetail })}
                     </div>
                 )
             }else{
@@ -339,7 +340,7 @@ export default class AppComponent extends Component {
             return (
                 this.props.fallbackComponent ? this.props.fallbackComponent:
                 <div>
-                    {this.state.component || 'Unable to load component'}
+                    {this.state.errorComponent || 'Unable to load component'}
                 </div>
             )
         }
