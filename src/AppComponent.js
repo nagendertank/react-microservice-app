@@ -137,7 +137,8 @@ export default class AppComponent extends Component {
 
     loadMenu(menuName, specsData, dataProps, apiGwUrl){
         let self = this;
-            let menuData = [];
+            let tabData = [],
+                menuData = [];
         Array.isArray(specsData) && specsData.forEach((service)=>{
                 if(service.spec.navigation && service.spec.navigation.length>=0) {
                     if(service.spec.navigation[0].tabs) {
@@ -148,8 +149,9 @@ export default class AppComponent extends Component {
                                         'tabs': navigation.tabs,
                                         'microService': service.service_name,
                                         'routes': service.spec.sharedRoutes
-                                                });
-                                    menuData.push(obj);
+                                    });
+                                    
+                                    tabData.push(obj);
                                 }
                             }
                         });
@@ -158,23 +160,25 @@ export default class AppComponent extends Component {
                         let obj = Object.assign({},{
                             'componentName' : service.spec.navigation[0].componentName,
                             'microService': service.service_name,
-                            'routes': service.spec.sharedRoutes
+                            'routes': service.spec.sharedRoutes,
                         });
-                        self.getComponent(obj.microService, dataProps, [obj], null, specsData, obj.componentName, apiGwUrl);
+
+                        menuData.push(obj);
                         return;
                     }
                 }
             });
 
-            if(menuData.length>0){
+            if(menuData.length > 0 || tabData.length > 0) {
                 menuData.forEach((data) => {
-                    self.getComponent(data.microService, dataProps, menuData, true, specsData, null, apiGwUrl);
-                })
-            }else{
-                this.setState({
-                    loading: false,
-                    menuData:[]
+                    self.getComponent(data.microService, dataProps, [data], null, specsData, data.componentName, apiGwUrl);
                 });
+
+                tabData.forEach((data) => {
+                    self.getComponent(data.microService, dataProps, tabData, true, specsData, null, apiGwUrl);
+                });
+            } else {
+                this.setState({ loading: false, hasError: true });
             }
     }
 
