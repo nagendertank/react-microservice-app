@@ -38,16 +38,16 @@
     "babel-runtime": "^6.18.0",
     "chai": "^4.1.2",
     "enzyme": "^3.3.0",
-    "enzyme-adapter-react-15": "^1.0.5",
+    "enzyme-adapter-react-16": "^1.14.0",
     "enzyme-to-json": "^3.3.4",
     "jest": "^22.4.3",
     "jsdom": "^11.11.0",
     "path-to-regexp": "^2.2.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-test-renderer": "^15.6.1"
+    "react-test-renderer": "^16.9.0"
   },
   "dependencies": {
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.19"
   }
 }
