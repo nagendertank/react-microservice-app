@@ -178,7 +178,7 @@ export default class AppComponent extends Component {
                     self.getComponent(data.microService, dataProps, tabData, true, specsData, null, apiGwUrl);
                 });
             } else {
-                this.setState({ loading: false, hasError: true });
+                this.setState({ loading: false, menuData: [] });
             }
     }
 
