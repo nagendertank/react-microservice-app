@@ -5,6 +5,7 @@ import * as internalCache from './internalCache';
 import pathToRegexp from 'path-to-regexp';
 import './app.css';
 import _ from 'lodash';
+import {axiosInstance} from './axiosInstance'
 
 export default class AppComponent extends Component {
     constructor(props){
@@ -14,6 +15,7 @@ export default class AppComponent extends Component {
             component:null,
             appDetail:null,
             error:false,
+            errorComponent: null,
             menuData:null,
             specs:null,
             hasError: false
@@ -28,14 +30,15 @@ export default class AppComponent extends Component {
 
     getSpecs(props,callback){
         let self = this;
+        const api = this.props.customAxiosInstance ? this.props.customAxiosInstance : axiosInstance
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            axios.get(props.apiGwUrl+'/apigw/v1/register/UI',{withCredentials:true}).then((res) => {
+            api.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
-                self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
             })
         }
     }
@@ -57,7 +60,7 @@ export default class AppComponent extends Component {
                         }
                     } else if (componentName){
                         if (appModule) {
-                            let component = React.createElement(appModule[componentName], {...self.props, ...appDetail});
+                            let component = eval(appDetail.library)[componentName];
                             self.setState({
                                 loading: false,
                                 component,
@@ -66,7 +69,7 @@ export default class AppComponent extends Component {
                             });
                             return;
                         }else{
-                            self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                            self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                         }
                     } else {
                         if (appModule) {
@@ -77,7 +80,7 @@ export default class AppComponent extends Component {
                             let path = window.location.pathname.replace(self.props.routeUrl, '')
                             routeData.some((route) => {
                                 if (path === '' || path==='/'){
-                                    component = React.createElement(route.component, {...self.props, ...appDetail});
+                                    component = route.component;
                                     return;
                                 }else{
                                     if (self.props.match.params){
@@ -85,7 +88,7 @@ export default class AppComponent extends Component {
                                         let params = re.exec(self.props.match.params[0])
                                         let props = Object.assign({}, self.props,self.props);
                                         props.match.params = params;
-                                        component = React.createElement(route.component, {props, ...appDetail});
+                                        component = route.component;
                                         return;
                                     }
                                 }
@@ -104,7 +107,7 @@ export default class AppComponent extends Component {
                                 let component = null;
                                 routeData.some((route) => {
                                     if (self.props.match.url && self.props.match.url === self.props.routeUrl) {
-                                        component = React.createElement(route.component, {...self.props, ...appDetail});
+                                        component = route.component;
                                         return;
                                     }else{
                                         if (self.props.match.params) {
@@ -112,7 +115,7 @@ export default class AppComponent extends Component {
                                             let params = re.exec(self.props.match.params[0])
                                             let props = Object.assign({}, self.props);
                                             props.match.params = params;
-                                            component = React.createElement(route.component, {...props, ...appDetail});
+                                            component = route.component;
                                             return;
                                         }
                                     }
@@ -128,14 +131,15 @@ export default class AppComponent extends Component {
                         }
                     }
                 } else {
-                    self.setState({ loading: false, component: <div>Unable to load component</div>, error: true });
+                    self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                 }
             });
     }
 
     loadMenu(menuName, specsData, dataProps, apiGwUrl){
         let self = this;
-            let menuData = [];
+            let tabData = [],
+                menuData = [];
         Array.isArray(specsData) && specsData.forEach((service)=>{
                 if(service.spec.navigation && service.spec.navigation.length>=0) {
                     if(service.spec.navigation[0].tabs) {
@@ -146,8 +150,9 @@ export default class AppComponent extends Component {
                                         'tabs': navigation.tabs,
                                         'microService': service.service_name,
                                         'routes': service.spec.sharedRoutes
-                                                });
-                                    menuData.push(obj);
+                                    });
+                                    
+                                    tabData.push(obj);
                                 }
                             }
                         });
@@ -156,23 +161,25 @@ export default class AppComponent extends Component {
                         let obj = Object.assign({},{
                             'componentName' : service.spec.navigation[0].componentName,
                             'microService': service.service_name,
-                            'routes': service.spec.sharedRoutes
+                            'routes': service.spec.sharedRoutes,
                         });
-                        self.getComponent(obj.microService, dataProps, [obj], null, specsData, obj.componentName, apiGwUrl);
+
+                        menuData.push(obj);
                         return;
                     }
                 }
             });
 
-            if(menuData.length>0){
+            if(menuData.length > 0 || tabData.length > 0) {
                 menuData.forEach((data) => {
-                    self.getComponent(data.microService, dataProps, menuData, true, specsData, null, apiGwUrl);
-                })
-            }else{
-                this.setState({
-                    loading: false,
-                    menuData:[]
+                    self.getComponent(data.microService, dataProps, [data], null, specsData, data.componentName, apiGwUrl);
                 });
+
+                tabData.forEach((data) => {
+                    self.getComponent(data.microService, dataProps, tabData, true, specsData, null, apiGwUrl);
+                });
+            } else {
+                this.setState({ loading: false, menuData: [] });
             }
     }
 
@@ -221,7 +228,7 @@ export default class AppComponent extends Component {
                                 let props = Object.assign({}, dataProps);
                                 props.match.params = params;
                                 //Currently not supporting passing of context to component based on routes
-                                component = React.createElement(appRoute.component, props);
+                                component = appRoute.component;
                                 isRouteComponentFound = true;
                                 self.setState({
                                     loading: false,
@@ -234,15 +241,15 @@ export default class AppComponent extends Component {
                         });
 
                         if (!isRouteComponentFound){
-                            self.setState({ loading: false, component: self.routeErrorJSX, error: true });
+                            self.setState({ loading: false, errorComponent: self.routeErrorJSX, error: true });
                         }
                     }else{
-                        self.setState({ loading: false, component: <div>Unable to load resource</div>, error: true });
+                        self.setState({ loading: false, errorComponent: <div>Unable to load resource</div>, error: true });
                     }
                 }); 
-            } else this.setState({ loading: false, component: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
+            } else this.setState({ loading: false, errorComponent: this.routeErrorJSX, error: true });  //Show error if route is not in sharedRoutes
         }else{
-            this.setState({ loading: false, component: this.routeErrorJSX, error: true });
+            this.setState({ loading: false, errorComponent: this.routeErrorJSX, error: true });
         }
     }
 
@@ -321,25 +328,25 @@ export default class AppComponent extends Component {
             if (!this.props.overrideComponent){
                 return (
                     <div>
-                        {this.state.component}
+                        {React.createElement(this.state.component, { ...this.props, ...this.state.appDetail })}
                     </div>
                 )
             }else{
                let component = React.createElement(this.props.overrideComponent,{
-                   appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
+                error:false, appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
                })
                 return component;
             }
         } else if (this.state.error && this.props.overrideComponent){
             let component = React.createElement(this.props.overrideComponent, {
-                appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
+                error:true, appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
             });
             return component;
         }else{
             return (
-                this.props.notFound ? this.props.notFound():
+                this.props.fallbackComponent ? this.props.fallbackComponent:
                 <div>
-                    {this.state.component || 'Unable to load component'}
+                    {this.state.errorComponent || 'Unable to load component'}
                 </div>
             )
         }

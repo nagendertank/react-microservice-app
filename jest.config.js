@@ -6,4 +6,5 @@ module.exports = {
     "\\.(css|less)$": "<rootDir>/tests/__mocks__/styleMock.js"
   },
   snapshotSerializers: ["enzyme-to-json/serializer"],
+  testURL:"file:/"
  };
