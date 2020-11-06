@@ -48,6 +48,7 @@ export default class AppComponent extends Component {
         this.setState({ loading:true});
         LoadBundle(name, specsData, apiGwUrl, props.token, function (result, appDetail) {
                 if (result) {
+                    let appModule = window[appDetail.library];
                     if (isMenu) {
                         self.currentBundle++;
                         if (self.currentBundle === menuData.length) {
@@ -58,8 +59,8 @@ export default class AppComponent extends Component {
                             });
                         }
                     } else if (componentName){
-                        if (eval(appDetail.library)) {
-                            let component = eval(appDetail.library)[componentName];
+                        if (appModule) {
+                            let component = appModule[componentName];
                             self.setState({
                                 loading: false,
                                 component,
@@ -71,10 +72,10 @@ export default class AppComponent extends Component {
                             self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                         }
                     } else {
-                        if (eval(appDetail.library)) {
+                        if (appModule) {
                             //let component = React.createElement(eval(appDetail.library).App, self.dataProps);
 
-                            let routeData = eval(appDetail.library).Routes;
+                            let routeData = appModule.Routes;
                             let component = null;
                             let path = window.location.pathname.replace(self.props.routeUrl, '')
                             routeData.some((route) => {
@@ -102,7 +103,7 @@ export default class AppComponent extends Component {
                         } else {
                             setTimeout(function () {
                                 //let component = React.createElement(eval(appDetail.library).App, self.dataProps);
-                                let routeData = eval(appDetail.library).Routes;
+                                let routeData = appModule.Routes;
                                 let component = null;
                                 routeData.some((route) => {
                                     if (self.props.match.url && self.props.match.url === self.props.routeUrl) {
@@ -218,7 +219,8 @@ export default class AppComponent extends Component {
                 //Error handling will fail here if there are multiple JS bundles..
                 LoadBundle(validSpec.name, specsData, apiGwUrl, dataProps.token, function (result, appDetail) {
                     if(result){
-                        let routeData = eval(appDetail.library).Routes;
+                        let appModule = window[appDetail.library];
+                        let routeData = appModule && appModule.Routes || [];
                         let component = null;
                         routeData.some((appRoute) => {
                             let curRoute = dataProps.match.params[0];
