@@ -60,7 +60,7 @@ export default class AppComponent extends Component {
                         }
                     } else if (componentName){
                         if (appModule) {
-                            let component = eval(appDetail.library)[componentName];
+                            let component = appModule[componentName];
                             self.setState({
                                 loading: false,
                                 component,
