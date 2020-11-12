@@ -224,7 +224,7 @@ export default class AppComponent extends Component {
                         let component = null;
                         routeData.some((appRoute) => {
                             let curRoute = dataProps.match.params[0];
-                            if (appRoute.path === (curRoute.startsWith('/') ? curRoute : '/'+curRoute)) {
+                            if (pathToRegexp(appRoute.path).exec(curRoute.startsWith('/') ? curRoute : '/' + curRoute)) {
                                 let props = Object.assign({}, dataProps);
                                 props.match.params = params;
                                 //Currently not supporting passing of context to component based on routes
