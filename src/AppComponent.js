@@ -142,31 +142,31 @@ export default class AppComponent extends Component {
                 menuData = [];
         Array.isArray(specsData) && specsData.forEach((service)=>{
                 if(service.spec.navigation && service.spec.navigation.length>=0) {
-                    if(service.spec.navigation[0].tabs) {
-                        service.spec.navigation.forEach((navigation)=>{
+                    service.spec.navigation.forEach((navigation)=>{
                         if (navigation.menuName === menuName){
-                                if(navigation.tabs) {
-                                    let obj = Object.assign({},{
-                                        'tabs': navigation.tabs,
-                                        'microService': service.service_name,
-                                        'routes': service.spec.sharedRoutes
-                                    });
-                                    
-                                    tabData.push(obj);
-                                }
+                            if(navigation.tabs) {
+                                let obj = Object.assign({},{
+                                    'tabs': navigation.tabs,
+                                    'microService': service.service_name,
+                                    'routes': service.spec.sharedRoutes
+                                });
+                                
+                                tabData.push(obj);
+                            } else {
+                                let obj = Object.assign({},{
+                                    'componentName' : service.spec.navigation[0].componentName,
+                                    'microService': service.service_name,
+                                    'routes': service.spec.sharedRoutes,
+                                });
+        
+                                menuData.push(obj);
+                                return;
                             }
-                        });
-                    }  else if(service.spec.navigation[0].menuName === menuName){
-                        //No tabs available, so load the first component and return
-                        let obj = Object.assign({},{
-                            'componentName' : service.spec.navigation[0].componentName,
-                            'microService': service.service_name,
-                            'routes': service.spec.sharedRoutes,
-                        });
-
-                        menuData.push(obj);
+                        }
+                    });
+                    
+                    if(menuData.length>0)
                         return;
-                    }
                 }
             });
 
