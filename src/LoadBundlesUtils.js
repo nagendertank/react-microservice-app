@@ -86,7 +86,7 @@ function checkToken(token){
 export default function loadBundles(name, specsData,apiGWURl,token,callback){
     let self = this;
     let componentLoaded = internalCache.componentLoaded;
-    if (!componentLoaded[name] || (componentLoaded[name] && !componentLoaded[name]['isLoaded'])) {
+    if (!componentLoaded[name] || (componentLoaded[name] && !componentLoaded[name]['isLoading'] && !componentLoaded[name]['isLoaded'])) {
         let serviceSpec = specsData.filter((data)=>{
                 return data.service_name ===name;
             });
@@ -101,12 +101,14 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                         bundleQueryParams += tokenPromise ? (token.parseData? token.parseData(tokenPromise):tokenPromise) : token;
                         let appDetail = appData.spec; 
                         appDetail.resources.forEach(element => {
+                            componentLoaded[name]['isLoading'] = true;
                             if (element.type==='javascript'){
                                 __loadJS(element, appDetail, apiGWURl,bundleQueryParams, function (isLoaded) {
                                     iterator++;
                                     if (isLoaded){
                                         if (iterator === appDetail.resources.length){
                                             componentLoaded[name]['isLoaded'] = true;
+                                            delete componentLoaded[name]['isLoading'];
                                             componentLoaded[name]['appDetail'] = appDetail;
                                             callback(true, appDetail);
                                         }
@@ -120,6 +122,7 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                                     if (isLoaded) {
                                         if (iterator === appDetail.resources.length) {
                                             componentLoaded[name]['isLoaded'] = true;
+                                            delete componentLoaded[name]['isLoading'];
                                             componentLoaded[name]['appDetail'] = appDetail;
                                             callback(true, appDetail);
                                         }
