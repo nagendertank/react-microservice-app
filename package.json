@@ -41,7 +41,7 @@
     "enzyme-adapter-react-16": "^1.14.0",
     "enzyme-to-json": "^3.3.4",
     "jest": "^22.4.3",
-    "jsdom": "^11.11.0",
+    "jsdom": "^16.5.0",
     "path-to-regexp": "^2.2.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
