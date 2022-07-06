@@ -30,6 +30,7 @@ function __loadJS(jsElement, appDetail,apiGWURl, token, callback) {
         };
 
         jsElm.onerror = function () {
+            jsElm.remove();
             callback(false);
         };
     }
@@ -71,6 +72,7 @@ function __loadCSS(cssElement, appDetail, apiGWURl, token, callback) {
         };
 
         cssElem.onerror = function () {
+            cssElem.remove();
             callback(false);
         };
     }
@@ -112,7 +114,8 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                                             callback(true, appDetail);
                                         }
                                     }else{
-                                        callback(false);
+                                        componentLoaded[name]['isLoaded'] = false;
+                                        callback(false, [], name);
                                     }
                                 });
                             }else{
@@ -125,7 +128,8 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                                             callback(true, appDetail);
                                         }
                                     } else {
-                                        callback(false);
+                                        componentLoaded[name]['isLoaded'] = false;
+                                        callback(false, [], name);
                                     }
                                 });
                             }
