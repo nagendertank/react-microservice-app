@@ -56,7 +56,8 @@ export default class AppComponent extends Component {
                             self.setState({
                                 loading: false,
                                 menuData,
-                                error: false
+                                error: self.failedComponents && !!self.failedComponents.length,
+                                failedComponents: self.failedComponents
                             });
                         }
                     } else if (componentName){
