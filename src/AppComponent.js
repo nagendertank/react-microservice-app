@@ -26,6 +26,7 @@ export default class AppComponent extends Component {
         this.getSpecs = this.getSpecs.bind(this);
         this.loadRoute = this.loadRoute.bind(this);
         this.currentBundle = 0;
+        this.failedComponents =[];
     }
 
     getSpecs(props,callback){
@@ -55,7 +56,8 @@ export default class AppComponent extends Component {
                             self.setState({
                                 loading: false,
                                 menuData,
-                                error: false
+                                error: self.failedComponents && !!self.failedComponents.length,
+                                failedComponents: self.failedComponents
                             });
                         }
                     } else if (componentName){
@@ -130,7 +132,22 @@ export default class AppComponent extends Component {
                             }, 5000)
                         }
                     }
-                } else {
+                } else if (self.props.failSafe && isMenu) {
+                    self.failedComponents = (self.failedComponents || []);
+                    if (!self.failedComponents.includes(failedComponent)) {
+                        self.currentBundle++;
+                        self.failedComponents.push(failedComponent);
+                        if (self.currentBundle === menuData.length) {
+                            self.setState({
+                                loading: false,
+                                errorComponent: <div>Unable to load component</div>,
+                                error: true,
+                                failedComponents: self.failedComponents
+                            });
+                        }
+                    }
+                }
+                else {
                     self.setState({ loading: false, errorComponent: <div>Unable to load component</div>, error: true });
                 }
             });
@@ -286,6 +303,7 @@ export default class AppComponent extends Component {
         let componentName = nextProps.componentName;
         let self = this;
         this.currentBundle = 0;
+        this.failedComponents =[];
         this.getSpecs(nextProps,function (response) {
             let apiGwUrl = response.cdn;
             let specsData = response.specs;
@@ -338,9 +356,18 @@ export default class AppComponent extends Component {
                 return component;
             }
         } else if (this.state.error && this.props.overrideComponent){
-            let component = React.createElement(this.props.overrideComponent, {
-                error:true, appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
-            });
+
+            let component;
+            if (this.props.failSafe) {
+                component = React.createElement(this.props.overrideComponent, {
+                    error: true, failedComponents: this.state.failedComponents, appDetail: this.state.appDetail, routeUrl: this.props.routeUrl, menuData: this.state.menuData, componentLoaded: internalCache.componentLoaded, ...this.props
+                });
+            } else {
+                component = React.createElement(this.props.overrideComponent, {
+                    error: true, appDetail: [], routeUrl: this.props.routeUrl, menuData: [], componentLoaded: [], ...this.props
+                });
+            }
+            
             return component;
         }else{
             return (
