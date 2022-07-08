@@ -136,18 +136,18 @@ export default function loadBundles(name, specsData,apiGWURl,token,callback){
                         });
                     })
                     .catch((err)=>{
-                        callback(false)
+                        callback(false, [], name)
                     })
                 }else{
-                    callback(false);
+                    callback(false, [], name);
                 }
             }else{
-                callback(false);
+                callback(false, [], name);
             }
     } else if (componentLoaded[name]['isLoaded']) {
         let appDetail = componentLoaded[name]['appDetail'];
         callback(true, appDetail);
     }else{
-        callback(false);
+        callback(false, [], name);
     }
 }
