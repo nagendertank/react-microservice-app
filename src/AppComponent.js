@@ -47,7 +47,7 @@ export default class AppComponent extends Component {
     getComponent(name, props, menuData, isMenu, specsData, componentName, apiGwUrl){
         let self = this;
         this.setState({ loading:true});
-        LoadBundle(name, specsData, apiGwUrl, props.token, function (result, appDetail) {
+        LoadBundle(name, specsData, apiGwUrl, props.token, function (result, appDetail, failedComponent) {
                 if (result) {
                     let appModule = window[appDetail.library];
                     if (isMenu) {
@@ -134,7 +134,7 @@ export default class AppComponent extends Component {
                     }
                 } else if (self.props.failSafe && isMenu) {
                     self.failedComponents = (self.failedComponents || []);
-                    if (!self.failedComponents.includes(failedComponent)) {
+                    if (failedComponent && !self.failedComponents.includes(failedComponent)) {
                         self.currentBundle++;
                         self.failedComponents.push(failedComponent);
                         if (self.currentBundle === menuData.length) {
