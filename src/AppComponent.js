@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios';
 import LoadBundle from './LoadBundlesUtils';
-import * as internalCache from './internalCache';
+import internalCache from './internalCache';
 import pathToRegexp from 'path-to-regexp';
 import './app.css';
 import _ from 'lodash';
@@ -31,11 +31,12 @@ export default class AppComponent extends Component {
 
     getSpecs(props,callback){
         let self = this;
-        const api = this.props.customAxiosInstance ? this.props.customAxiosInstance : axiosInstance
+        const api = this.props.customAxiosInstance ? this.props.customAxiosInstance : axiosInstance;
+        const url = props.uiSpecUrl ? props.uiSpecUrl : props.apiGwUrl+'/apigw/v1/register/UI';
         if (internalCache.appSpecs && (internalCache.appSpecs.length > 0 || !_.isUndefined(internalCache.appSpecs.specs))){
             callback(internalCache.appSpecs)
         }else{
-            api.get(props.apiGwUrl+'/apigw/v1/register/UI').then((res) => {
+            api.get(url).then((res) => {
                 internalCache.appSpecs = res.data;
                 callback(res.data);
             }, (error) => {
