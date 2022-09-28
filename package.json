@@ -1,6 +1,6 @@
 {
   "name": "react-microservice-app",
-  "version": "1.2.24",
+  "version": "1.2.25",
   "description": "A base app to load all the react microservices",
   "main": "lib/index.js",
   "scripts": {
