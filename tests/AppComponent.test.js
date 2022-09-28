@@ -1,5 +1,6 @@
 import AppComponent from '../src/AppComponent';
 import React, { Component } from 'react'
+import internalCache from "../src/internalCache";
 
 const getInstance = () => {
   return wrapper.instance();
@@ -146,6 +147,41 @@ describe('Test React Microservice Component', () => {
     axiosMockAdapter.onGet('/apigw/v1/register/UI').reply(200, specs);
   
     let wrapper = shallow(<AppComponent menuName="CustomReports" routeUrl="/customreports" apiGwUrl={''} />);
+    setTimeout(()=>{
+      wrapper.update()
+      jestExpect(wrapper.html()).toMatchSnapshot();
+      done()
+    },1000)
+    
+  });
+
+  test('Verify override component renders even match menu not available for uiSpecUrl', (done) => {
+   
+    axiosMockAdapter.onGet('/uiSpecUrl/register/UI').reply(200, specs);
+    internalCache.appSpecs = [];
+    internalCache.componentLoaded = [];
+  
+    let wrapper = shallow(<AppComponent menuName="Security" overrideComponent={OverrideComponent} routeUrl="/security" apiGwUrl={''} uiSpecUrl={'/uiSpecUrl/register/UI'} />);
+    wrapper.instance().loadMenu = jest.fn(() => {
+        wrapper
+          .instance()
+          .setState({
+            loading: false,
+          },()=>{
+            jestExpect(wrapper.find(OverrideComponent).length).toEqual(1);
+            done();
+          });
+      });
+
+      jestExpect(wrapper.text()).toEqual('loading...');
+
+  });
+
+  test('Load single component when tabs not mentioned in navigation', (done) => {
+   
+    axiosMockAdapter.onGet('/uiSpecUrl/register/UI').reply(200, specs);
+  
+    let wrapper = shallow(<AppComponent menuName="CustomReports" routeUrl="/customreports" apiGwUrl={''} uiSpecUrl={'/uiSpecUrl/register/UI'}/>);
     setTimeout(()=>{
       wrapper.update()
       jestExpect(wrapper.html()).toMatchSnapshot();
