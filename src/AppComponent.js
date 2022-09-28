@@ -143,7 +143,8 @@ export default class AppComponent extends Component {
                                 loading: false,
                                 errorComponent: <div>Unable to load component</div>,
                                 error: true,
-                                failedComponents: self.failedComponents
+                                failedComponents: self.failedComponents,
+                                menuData
                             });
                         }
                     }
